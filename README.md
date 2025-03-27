@@ -10,8 +10,7 @@ SETUP FILAMENT
 - php artisan filament:install --panels
 - php artisan make:filament-user
 
-CARA PULL MASTER TERBARU
-- git stash
-- git checkout master
-- git pull --rebase origin master
-- git stash pop
+CARA PULL CODE TERBARU MASTER
+- git checkout [branchmu]
+- git fetch origin
+- git rebase origin/master
