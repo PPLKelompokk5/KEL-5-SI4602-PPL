@@ -12,18 +12,47 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 
 class EmployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')
+                ->label('Nama Lengkap')
+                ->required()
+                ->maxLength(255),
+
+                TextInput::make('email')
+                    ->label('Email')
+                    ->email()
+                    ->required()
+                    ->unique(ignoreRecord: true),
+
+                TextInput::make('password')
+                    ->label('Password')
+                    ->password()
+                    ->required(),
+
+                Select::make('position_id')
+                    ->label('Posisi')
+                    ->relationship('position', 'name')
+                    ->required(),
+                Select::make('status')
+                    ->label('Status')
+                    ->required()
+                    ->options([
+                        1 => 'Aktif',
+                        0 => 'Tidak Aktif',
+                    ])
+                    ->default(1),
             ]);
     }
 
