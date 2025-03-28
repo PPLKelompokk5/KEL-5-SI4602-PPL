@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
 
 class EmployeeResource extends Resource
 {
@@ -60,7 +62,23 @@ class EmployeeResource extends Resource
     {
         return $table
             ->columns([
-                //
+            TextColumn::make('name')
+                ->label('Nama'),
+
+            TextColumn::make('email')
+                ->label('Email'),
+
+            TextColumn::make('position.name')
+                ->label('Posisi'),
+
+            BadgeColumn::make('status')
+                ->label('Status')
+                ->getStateUsing(fn ($record) => $record->status ? 'Aktif' : 'Tidak Aktif')
+                ->colors([
+                    'Aktif' => 'success',
+                    'Tidak Aktif' => 'danger',
+                ]),
+            
             ])
             ->filters([
                 //
