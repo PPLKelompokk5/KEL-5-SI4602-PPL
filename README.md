@@ -20,3 +20,6 @@ CARA MERGE CODE KE MASTER
 - git pull origin master
 - git merge [branchmu]
 note: pastikan branchmu udah dipush
+
+BIKIN RESOURCE
+- php artisan make:filament-resource [modelmu]
