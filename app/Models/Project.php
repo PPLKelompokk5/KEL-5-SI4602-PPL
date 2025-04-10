@@ -6,12 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
-        'id', 'name', 'start', 'end', 'pd', 'pm', 'type',
-        'nilai_kontrak', 'roi_percent', 'status',
+        'name', 'start', 'end', 'pd', 'pm', 'type',
+        'nilai_kontrak', 'roi_percent', 'client_id', 'status',
     ];
 
     public function projectDirector()
@@ -22,5 +19,10 @@ class Project extends Model
     public function projectManager()
     {
         return $this->belongsTo(Employee::class, 'pm');
+    }
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
     }
 }
