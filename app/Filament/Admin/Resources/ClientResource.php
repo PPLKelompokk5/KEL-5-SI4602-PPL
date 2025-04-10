@@ -14,14 +14,12 @@ use Illuminate\Database\Eloquent\Builder;
 class ClientResource extends Resource
 {
     protected static ?string $model = Client::class;
-
-    // Ganti ikon sidebar
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationGroup = 'Master Project';
 
-    // Ganti label menu sidebar
     public static function getNavigationLabel(): string
     {
-        return 'Clients';
+        return 'Client';
     }
 
     public static function form(Form $form): Form
