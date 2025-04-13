@@ -11,12 +11,12 @@ class Project extends Model
         'nilai_kontrak', 'roi_percent', 'client_id', 'status',
     ];
 
-    public function projectDirector()
+    public function pdEmployee() 
     {
         return $this->belongsTo(Employee::class, 'pd');
     }
 
-    public function projectManager()
+    public function pmEmployee() 
     {
         return $this->belongsTo(Employee::class, 'pm');
     }
