@@ -6,33 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-
-        // Tabel posisi/jabatan untuk employee
-        Schema::create('positions', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->timestamps();
-        });
-
-        // Tabel employee
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->foreignId('position_id')->constrained('positions')->onDelete('cascade');
-            $table->boolean('status')->default(1); // 1 = aktif, 0 = tidak aktif
+            $table->unsignedBigInteger('position_id')->nullable();
+            $table->string('status')->default('active');
             $table->rememberToken();
             $table->timestamps();
         });
+        
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('employees');
-        Schema::dropIfExists('positions');
-        Schema::dropIfExists('users');
     }
 };
