@@ -109,7 +109,7 @@ class ProjectResource extends Resource
                 TextColumn::make('roi_idr')
                     ->label('ROI (Rp)')
                     ->formatStateUsing(function ($record) {
-                        return 'Rp ' . number_format($record->roi_idr, 0, ',', '.');
+                        return 'Rp ' . number_format($record->roi_idr, 2, ',', '.');
                     }),
                 BooleanColumn::make('status')->label('Status Aktif'),
             ])
