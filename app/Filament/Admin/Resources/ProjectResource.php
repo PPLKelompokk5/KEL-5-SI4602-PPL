@@ -11,13 +11,12 @@ use Filament\Forms\Form;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\BooleanColumn;
 
 class ProjectResource extends Resource
 {
@@ -82,6 +81,12 @@ class ProjectResource extends Resource
                 ->numeric()
                 ->required(),
 
+            TextInput::make('roi_idr')
+                ->label('ROI (Rp)')
+                ->disabled()
+                ->dehydrated(false)
+                ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
+
             Toggle::make('status')
                 ->label('Status Aktif')
                 ->default(true),
@@ -99,9 +104,14 @@ class ProjectResource extends Resource
                 TextColumn::make('start')->label('Mulai')->date(),
                 TextColumn::make('end')->label('Selesai')->date(),
                 TextColumn::make('type')->label('Tipe'),
-                TextColumn::make('nilai_kontrak')->label('Kontrak')->money('IDR'),
-                TextColumn::make('roi_percent')->label('ROI (%)'),
-                TextColumn::make('status')->label('Status')->Integer(),
+                TextColumn::make('nilai_kontrak')->label('Nilai Kontrak')->money('IDR', locale: 'id'),
+                TextColumn::make('roi_percent')->label('ROI (%)')->formatStateUsing(fn ($state) => $state . '%'),
+                TextColumn::make('roi_idr')
+                    ->label('ROI (Rp)')
+                    ->formatStateUsing(function ($record) {
+                        return 'Rp ' . number_format($record->roi_idr, 0, ',', '.');
+                    }),
+                BooleanColumn::make('status')->label('Status Aktif'),
             ])
             ->filters([])
             ->actions([
