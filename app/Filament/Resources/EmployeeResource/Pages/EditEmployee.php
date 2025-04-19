@@ -8,8 +8,18 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditEmployee extends EditRecord
 {
+    /**
+     * Resource yang digunakan
+     *
+     * @var string
+     */
     protected static string $resource = EmployeeResource::class;
 
+    /**
+     * Mendapatkan aksi header
+     *
+     * @return array
+     */
     protected function getHeaderActions(): array
     {
         return [
