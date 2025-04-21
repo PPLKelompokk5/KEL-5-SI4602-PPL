@@ -17,7 +17,6 @@ class EditProject extends EditRecord
         ];
     }
 
-    // Ubah label tombol Cancel menjadi Back
     protected function getCancelFormAction(): Actions\Action
     {
         return parent::getCancelFormAction()->label('Back');
