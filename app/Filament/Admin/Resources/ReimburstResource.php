@@ -2,16 +2,20 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Filament\Admin\Resources\ReimburstResource\Pages;
-use App\Filament\Admin\Resources\ReimburstResource\RelationManagers;
-use App\Models\Reimburst;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
+use App\Models\Reimburst;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Card;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Admin\Resources\ReimburstResource\Pages;
+use App\Filament\Admin\Resources\ReimburstResource\RelationManagers;
 
 class ReimburstResource extends Resource
 {
@@ -23,7 +27,20 @@ class ReimburstResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Card::make()
+                    ->schema([
+                        TextInput::make('nama_reimburse'),
+                        TextInput::make('nama_pengaju'),
+                        TextInput::make('nama_project'),
+                        TextInput::make('nominal'),
+                        Select::make('status_approval')
+                            ->options([
+                                'pending' => 'Pending',
+                                'approved' => 'Approved',
+                                'rejected' =>  'Rejected',
+                            ]),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -31,13 +48,18 @@ class ReimburstResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('nama_reimburse'),
+                TextColumn::make('nama_pengaju'),
+                TextColumn::make('nama_project'),
+                TextColumn::make('nominal'),
+                TextColumn::make('status_approval'),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

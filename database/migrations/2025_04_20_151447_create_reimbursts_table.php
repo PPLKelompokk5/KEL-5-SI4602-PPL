@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('reimbursts', function (Blueprint $table) {
             $table->id();
-            $table->string('id_karyawan')->unique();
+            $table->string('id_karyawan');
             $table->string('nama_reimburse');
             $table->string('nama_pengaju');
             $table->string('nama_project');
