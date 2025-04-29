@@ -3,8 +3,6 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\ProjectResource\Pages;
-use App\Models\Client;
-use App\Models\Employee;
 use App\Models\Project;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -16,7 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BooleanColumn;
+use Filament\Tables\Columns\SelectColumn;
 
 class ProjectResource extends Resource
 {
@@ -30,15 +28,34 @@ class ProjectResource extends Resource
         return $form->schema([
             TextInput::make('name')
                 ->label('Nama Proyek')
-                ->required(),
+                ->required()
+                ->unique(ignoreRecord: true)
+                ->validationMessages([
+                    'required' => 'Nama proyek wajib diisi.',
+                    'unique' => 'Nama proyek sudah terdaftar.',
+                ]),                
 
             DatePicker::make('start')
                 ->label('Tanggal Mulai')
-                ->required(),
+                ->required()
+                ->reactive(),
 
             DatePicker::make('end')
                 ->label('Tanggal Selesai')
-                ->required(),
+                ->required()
+                ->reactive()
+                ->afterStateUpdated(fn ($state, callable $set, callable $get) => 
+                    $set('valid_end', $state >= $get('start'))
+                )
+                ->rules([
+                    function (callable $get) {
+                        return function (string $attribute, $value, \Closure $fail) use ($get) {
+                            if ($value < $get('start')) {
+                                $fail('Tanggal selesai tidak boleh lebih awal dari tanggal mulai.');
+                            }
+                        };
+                    },
+                ]),
 
             Select::make('pd')
                 ->label('Project Director (PD)')
@@ -87,41 +104,53 @@ class ProjectResource extends Resource
                 ->dehydrated(false)
                 ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
 
-            Toggle::make('status')
-                ->label('Status Aktif')
-                ->default(true),
+            Select::make('status')
+                ->label('Status')
+                ->options([
+                    1 => 'Ongoing',
+                    2 => 'Completed',
+                    3 => 'Stopped',
+                ])
+                ->required(),
         ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('name')->label('Nama Proyek')->searchable(),
-                TextColumn::make('client.name')->label('Client'),
-                TextColumn::make('pdEmployee.name')->label('PD'),
-                TextColumn::make('pmEmployee.name')->label('PM'),
-                TextColumn::make('start')->label('Mulai')->date(),
-                TextColumn::make('end')->label('Selesai')->date(),
-                TextColumn::make('type')->label('Tipe'),
-                TextColumn::make('nilai_kontrak')->label('Nilai Kontrak')->money('IDR', locale: 'id'),
-                TextColumn::make('roi_percent')->label('ROI (%)')->formatStateUsing(fn ($state) => $state . '%'),
-                TextColumn::make('roi_idr')
-                    ->label('ROI (Rp)')
-                    ->formatStateUsing(function ($record) {
-                        return 'Rp ' . number_format($record->roi_idr, 2, ',', '.');
-                    }),
-                BooleanColumn::make('status')->label('Status Aktif'),
-            ])
-            ->filters([])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+        return $table->columns([
+            TextColumn::make('name')->label('Nama Proyek')->searchable(),
+            TextColumn::make('client.name')->label('Client'),
+            TextColumn::make('pdEmployee.name')->label('PD'),
+            TextColumn::make('pmEmployee.name')->label('PM'),
+            TextColumn::make('start')->label('Mulai')->date(),
+            TextColumn::make('end')->label('Selesai')->date(),
+            TextColumn::make('type')->label('Tipe'),
+            TextColumn::make('nilai_kontrak')->label('Nilai Kontrak')->money('IDR', locale: 'id'),
+            TextColumn::make('roi_percent')->label('ROI (%)')->formatStateUsing(fn ($state) => $state . '%'),
+            TextColumn::make('roi_idr')->label('ROI (Rp)')
+                ->formatStateUsing(fn ($record) => 'Rp ' . number_format($record->roi_idr, 0, ',', '.')),
+
+            // Select dropdown untuk status
+            SelectColumn::make('status')
+                ->label('Status')
+                ->options([
+                    1 => 'Ongoing',
+                    2 => 'Completed',
+                    3 => 'Stopped',
+                ])
+                ->selectablePlaceholder(false)
+                ->disablePlaceholderSelection()
+                ->sortable(),
+        ])
+        ->filters([])
+        ->actions([
+            Tables\Actions\EditAction::make(),
+        ])
+        ->bulkActions([
+            Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]),
+        ]);
     }
 
     public static function getPages(): array
