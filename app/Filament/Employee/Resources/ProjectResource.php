@@ -10,15 +10,13 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BooleanColumn;
+use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Filament\Tables\Columns\SelectColumn;
 
 class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
     protected static ?string $navigationLabel = 'Projects';
     protected static ?string $navigationGroup = 'Presensi';
@@ -26,14 +24,34 @@ class ProjectResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('name')->label('Nama Proyek')->required(),
-            Forms\Components\DatePicker::make('start')->label('Tanggal Mulai')->required(),
-            Forms\Components\DatePicker::make('end')->label('Tanggal Selesai')->required(),
+            Forms\Components\TextInput::make('name')
+                ->label('Nama Proyek')
+                ->required(),
+
+            Forms\Components\DatePicker::make('start')
+                ->label('Tanggal Mulai')
+                ->required()
+                ->reactive()
+                ->afterStateUpdated(fn ($state, callable $set, callable $get) =>
+                    $get('end') && $state > $get('end') ? $set('end', $state) : null
+                ),
+
+            Forms\Components\DatePicker::make('end')
+                ->label('Tanggal Selesai')
+                ->required()
+                ->rules([
+                    fn (callable $get) => function ($attribute, $value, $fail) use ($get) {
+                        if ($value < $get('start')) {
+                            $fail('Tanggal selesai tidak boleh sebelum tanggal mulai.');
+                        }
+                    },
+                ]),
 
             Forms\Components\Select::make('client_id')
                 ->label('Client')
                 ->relationship('client', 'name')
                 ->searchable()
+                ->preload()
                 ->required(),
 
             Forms\Components\Select::make('type')
@@ -46,8 +64,15 @@ class ProjectResource extends Resource
                 ])
                 ->required(),
 
-            Forms\Components\TextInput::make('nilai_kontrak')->label('Nilai Kontrak')->numeric()->required(),
-            Forms\Components\TextInput::make('roi_percent')->label('ROI (%)')->numeric()->required(),
+            Forms\Components\TextInput::make('nilai_kontrak')
+                ->label('Nilai Kontrak')
+                ->numeric()
+                ->required(),
+
+            Forms\Components\TextInput::make('roi_percent')
+                ->label('ROI (%)')
+                ->numeric()
+                ->required(),
 
             Forms\Components\TextInput::make('roi_idr')
                 ->label('ROI (Rp)')
@@ -68,33 +93,31 @@ class ProjectResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('name')->label('Nama Proyek')->searchable(),
-                TextColumn::make('client.name')->label('Client'),
-                TextColumn::make('start')->label('Mulai')->date(),
-                TextColumn::make('end')->label('Selesai')->date(),
-                TextColumn::make('type')->label('Tipe'),
-                TextColumn::make('nilai_kontrak')->label('Nilai Kontrak')->money('IDR', locale: 'id'),
-                TextColumn::make('roi_percent')->label('ROI (%)')->formatStateUsing(fn ($state) => $state . '%'),
-                TextColumn::make('roi_idr')->label('ROI (Rp)')
-                    ->formatStateUsing(fn ($record) => 'Rp ' . number_format($record->roi_idr, 0, ',', '.')),
-                
-                // Dropdown editable langsung di tabel
-                SelectColumn::make('status')
-                    ->label('Status')
-                    ->options([
-                        1 => 'Ongoing',
-                        2 => 'Completed',
-                        3 => 'Stopped',
-                    ])
-                    ->selectablePlaceholder(false)
-                    ->disablePlaceholderSelection()
-                    ->sortable(),
-            ])
-            ->filters([])
-            ->actions([]) // tetap tanpa tombol edit
-            ->bulkActions([]); // tetap tanpa tombol delete
+        return $table->columns([
+            TextColumn::make('name')->label('Nama Proyek')->searchable(),
+            TextColumn::make('client.name')->label('Client'),
+            TextColumn::make('start')->label('Mulai')->date(),
+            TextColumn::make('end')->label('Selesai')->date(),
+            TextColumn::make('type')->label('Tipe'),
+            TextColumn::make('nilai_kontrak')->label('Nilai Kontrak')->money('IDR', locale: 'id'),
+            TextColumn::make('roi_percent')->label('ROI (%)')->formatStateUsing(fn ($state) => $state . '%'),
+            TextColumn::make('roi_idr')->label('ROI (Rp)')
+                ->formatStateUsing(fn ($record) => 'Rp ' . number_format($record->roi_idr, 0, ',', '.')),
+
+            SelectColumn::make('status')
+                ->label('Status')
+                ->options([
+                    1 => 'Ongoing',
+                    2 => 'Completed',
+                    3 => 'Stopped',
+                ])
+                ->selectablePlaceholder(false)
+                ->disablePlaceholderSelection()
+                ->sortable(),
+        ])
+        ->filters([])
+        ->actions([]) // Tidak bisa edit
+        ->bulkActions([]); // Tidak bisa hapus
     }
 
     public static function getRelations(): array
@@ -107,7 +130,6 @@ class ProjectResource extends Resource
         return [
             'index' => Pages\ListProjects::route('/'),
             'create' => Pages\CreateProject::route('/create'),
-            // edit tetap didefinisikan, tapi tidak bisa diakses karena dibatasi
             'edit' => Pages\EditProject::route('/{record}/edit'),
         ];
     }
@@ -115,8 +137,12 @@ class ProjectResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('pm', auth()->user()->id)
-            ->orWhere('pd', auth()->user()->id);
+            ->withoutGlobalScopes()
+            ->where(function ($query) {
+                $userId = auth()->id();
+                $query->where('pm', $userId)
+                      ->orWhere('pd', $userId);
+            });
     }
 
     public static function canEdit(Model $record): bool
