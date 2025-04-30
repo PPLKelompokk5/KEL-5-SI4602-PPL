@@ -8,8 +8,10 @@ use Filament\Pages\Page;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithPagination;
+use Carbon\Carbon;
 
 class PresencePage extends Page implements Forms\Contracts\HasForms
 {
@@ -46,16 +48,29 @@ class PresencePage extends Page implements Forms\Contracts\HasForms
 
     public function absen(): void
     {
-        $this->validateOnly('data.project_id', [
-            'data.project_id' => 'required|exists:projects,id',
-        ]);
+        // Validate all form inputs
+        $this->form->validate();
 
+        // Retrieve form state
+        $state = $this->form->getState();
+
+        // Create presence record
         Presence::create([
             'employees_id' => Auth::guard('employee')->id(),
-            'project_id' => $this->data['project_id'],
-            'date' => now()->toDateString(),
-            'timestamp' => now()->toTimeString(),
+            'project_id' => $state['project_id'],
+            'date' => Carbon::today()->toDateString(),
+            'timestamp' => Carbon::now()->toTimeString(),
         ]);
+
+        // Reset form inputs and pagination
+        $this->form->fill();
+        $this->resetPage();
+
+        // Notify user of success
+        Notification::make()
+            ->success()
+            ->title('Absen Berhasil')
+            ->send();
     }
 
     public function getLatestPresencesProperty()
