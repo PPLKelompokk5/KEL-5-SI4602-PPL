@@ -14,6 +14,9 @@ use Filament\Tables\Columns\BooleanColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Tables\Columns\SelectColumn;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 
 class ProjectResource extends Resource
 {
@@ -26,17 +29,36 @@ class ProjectResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('name')->label('Nama Proyek')->required(),
-            Forms\Components\DatePicker::make('start')->label('Tanggal Mulai')->required(),
-            Forms\Components\DatePicker::make('end')->label('Tanggal Selesai')->required(),
+            TextInput::make('name')->label('Nama Proyek')->required(),
 
-            Forms\Components\Select::make('client_id')
+            DatePicker::make('start')
+                ->label('Tanggal Mulai')
+                ->required()
+                ->reactive()
+                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                    if ($state > $get('end')) {
+                        $set('end', $state);
+                    }
+                }),
+
+            DatePicker::make('end')
+                ->label('Tanggal Selesai')
+                ->required()
+                ->rules([
+                    fn (callable $get) => function ($attribute, $value, $fail) use ($get) {
+                        if ($value < $get('start')) {
+                            $fail('Tanggal selesai tidak boleh sebelum tanggal mulai.');
+                        }
+                    },
+                ]),
+
+            Select::make('client_id')
                 ->label('Client')
                 ->relationship('client', 'name')
                 ->searchable()
                 ->required(),
 
-            Forms\Components\Select::make('type')
+            Select::make('type')
                 ->label('Tipe Proyek')
                 ->options([
                     'Pendampingan' => 'Pendampingan',
@@ -46,16 +68,16 @@ class ProjectResource extends Resource
                 ])
                 ->required(),
 
-            Forms\Components\TextInput::make('nilai_kontrak')->label('Nilai Kontrak')->numeric()->required(),
-            Forms\Components\TextInput::make('roi_percent')->label('ROI (%)')->numeric()->required(),
+            TextInput::make('nilai_kontrak')->label('Nilai Kontrak')->numeric()->required(),
+            TextInput::make('roi_percent')->label('ROI (%)')->numeric()->required(),
 
-            Forms\Components\TextInput::make('roi_idr')
+            TextInput::make('roi_idr')
                 ->label('ROI (Rp)')
                 ->disabled()
                 ->dehydrated(false)
                 ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
 
-            Forms\Components\Select::make('status')
+            Select::make('status')
                 ->label('Status')
                 ->options([
                     1 => 'Ongoing',
@@ -79,8 +101,7 @@ class ProjectResource extends Resource
                 TextColumn::make('roi_percent')->label('ROI (%)')->formatStateUsing(fn ($state) => $state . '%'),
                 TextColumn::make('roi_idr')->label('ROI (Rp)')
                     ->formatStateUsing(fn ($record) => 'Rp ' . number_format($record->roi_idr, 0, ',', '.')),
-                
-                // Dropdown editable langsung di tabel
+
                 SelectColumn::make('status')
                     ->label('Status')
                     ->options([
@@ -93,8 +114,8 @@ class ProjectResource extends Resource
                     ->sortable(),
             ])
             ->filters([])
-            ->actions([]) // tetap tanpa tombol edit
-            ->bulkActions([]); // tetap tanpa tombol delete
+            ->actions([]) // tetap tanpa edit
+            ->bulkActions([]); // tetap tanpa delete
     }
 
     public static function getRelations(): array
@@ -107,7 +128,6 @@ class ProjectResource extends Resource
         return [
             'index' => Pages\ListProjects::route('/'),
             'create' => Pages\CreateProject::route('/create'),
-            // edit tetap didefinisikan, tapi tidak bisa diakses karena dibatasi
             'edit' => Pages\EditProject::route('/{record}/edit'),
         ];
     }
