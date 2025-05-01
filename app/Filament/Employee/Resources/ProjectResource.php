@@ -47,14 +47,35 @@ class ProjectResource extends Resource
                     },
                 ]),
 
-            Forms\Components\Select::make('client_id')
+            DatePicker::make('start')
+                ->label('Tanggal Mulai')
+                ->required()
+                ->reactive()
+                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                    if ($state > $get('end')) {
+                        $set('end', $state);
+                    }
+                }),
+
+            DatePicker::make('end')
+                ->label('Tanggal Selesai')
+                ->required()
+                ->rules([
+                    fn (callable $get) => function ($attribute, $value, $fail) use ($get) {
+                        if ($value < $get('start')) {
+                            $fail('Tanggal selesai tidak boleh sebelum tanggal mulai.');
+                        }
+                    },
+                ]),
+
+            Select::make('client_id')
                 ->label('Client')
                 ->relationship('client', 'name')
                 ->searchable()
                 ->preload()
                 ->required(),
 
-            Forms\Components\Select::make('type')
+            Select::make('type')
                 ->label('Tipe Proyek')
                 ->options([
                     'Pendampingan' => 'Pendampingan',
@@ -74,13 +95,13 @@ class ProjectResource extends Resource
                 ->numeric()
                 ->required(),
 
-            Forms\Components\TextInput::make('roi_idr')
+            TextInput::make('roi_idr')
                 ->label('ROI (Rp)')
                 ->disabled()
                 ->dehydrated(false)
                 ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
 
-            Forms\Components\Select::make('status')
+            Select::make('status')
                 ->label('Status')
                 ->options([
                     1 => 'Ongoing',
