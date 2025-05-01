@@ -13,6 +13,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 
 class ProjectResource extends Resource
 {
@@ -24,99 +27,103 @@ class ProjectResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('name')
-                ->label('Nama Proyek')
-                ->required(),
-
-            Forms\Components\DatePicker::make('start')
-                ->label('Tanggal Mulai')
-                ->required()
-                ->reactive()
-                ->afterStateUpdated(fn ($state, callable $set, callable $get) =>
-                    $get('end') && $state > $get('end') ? $set('end', $state) : null
-                ),
-
-            Forms\Components\DatePicker::make('end')
-                ->label('Tanggal Selesai')
-                ->required()
-                ->rules([
-                    fn (callable $get) => function ($attribute, $value, $fail) use ($get) {
-                        if ($value < $get('start')) {
-                            $fail('Tanggal selesai tidak boleh sebelum tanggal mulai.');
-                        }
-                    },
+            Forms\Components\Grid::make(2)
+                ->schema([
+                    Select::make('client_id')
+                        ->label('Client')
+                        ->relationship('client', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+    
+                    TextInput::make('name')
+                        ->label('Nama Proyek')
+                        ->required(),
                 ]),
-
-            DatePicker::make('start')
-                ->label('Tanggal Mulai')
-                ->required()
-                ->reactive()
-                ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                    if ($state > $get('end')) {
-                        $set('end', $state);
-                    }
-                }),
-
-            DatePicker::make('end')
-                ->label('Tanggal Selesai')
-                ->required()
-                ->rules([
-                    fn (callable $get) => function ($attribute, $value, $fail) use ($get) {
-                        if ($value < $get('start')) {
-                            $fail('Tanggal selesai tidak boleh sebelum tanggal mulai.');
-                        }
-                    },
+    
+            Forms\Components\Grid::make(2)
+                ->schema([
+                    DatePicker::make('start')
+                        ->label('Tanggal Mulai')
+                        ->required()
+                        ->reactive()
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            if ($get('end') && $state > $get('end')) {
+                                $set('end', $state);
+                            }
+                        }),
+    
+                    DatePicker::make('end')
+                        ->label('Tanggal Selesai')
+                        ->required()
+                        ->rules([
+                            fn (callable $get) => function ($attribute, $value, $fail) use ($get) {
+                                if ($value < $get('start')) {
+                                    $fail('Tanggal selesai tidak boleh sebelum tanggal mulai.');
+                                }
+                            },
+                        ]),
                 ]),
-
-            Select::make('client_id')
-                ->label('Client')
-                ->relationship('client', 'name')
-                ->searchable()
-                ->preload()
-                ->required(),
-
-            Select::make('type')
-                ->label('Tipe Proyek')
-                ->options([
-                    'Pendampingan' => 'Pendampingan',
-                    'Semi-Pendampingan' => 'Semi-Pendampingan',
-                    'Mentoring' => 'Mentoring',
-                    'Perpetuation' => 'Perpetuation',
-                ])
-                ->required(),
-
-            Forms\Components\TextInput::make('nilai_kontrak')
-                ->label('Nilai Kontrak')
-                ->numeric()
-                ->required(),
-
-            Forms\Components\TextInput::make('roi_percent')
-                ->label('ROI (%)')
-                ->numeric()
-                ->required(),
-
-            TextInput::make('roi_idr')
-                ->label('ROI (Rp)')
-                ->disabled()
-                ->dehydrated(false)
-                ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
-
-            Select::make('status')
-                ->label('Status')
-                ->options([
-                    1 => 'Ongoing',
-                    2 => 'Completed',
-                    3 => 'Stopped',
-                ])
-                ->required(),
+    
+            Forms\Components\Grid::make(2)
+                ->schema([
+                    Select::make('pd')
+                        ->label('Project Director (PD)')
+                        ->relationship('pdEmployee', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+    
+                    Select::make('pm')
+                        ->label('Project Manager (PM)')
+                        ->relationship('pmEmployee', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+                ]),
+    
+            Forms\Components\Grid::make(2)
+                ->schema([
+                    Select::make('type')
+                        ->label('Tipe Proyek')
+                        ->options([
+                            'Pendampingan' => 'Pendampingan',
+                            'Semi-Pendampingan' => 'Semi-Pendampingan',
+                            'Mentoring' => 'Mentoring',
+                            'Perpetuation' => 'Perpetuation',
+                        ])
+                        ->required(),
+    
+                    TextInput::make('nilai_kontrak')
+                        ->label('Nilai Kontrak')
+                        ->numeric()
+                        ->required(),
+                ]),
+    
+            Forms\Components\Grid::make(2)
+                ->schema([
+                    TextInput::make('roi_percent')
+                        ->label('ROI (%)')
+                        ->numeric()
+                        ->required(),
+    
+                    TextInput::make('roi_idr')
+                        ->label('ROI (Rp)')
+                        ->disabled()
+                        ->dehydrated(false)
+                        ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
+                ]),
+    
+            // Tidak perlu tampilkan status di form, tapi pastikan default = 1 di model/controller jika pakai mass assignment
         ]);
-    }
-
+    }    
     public static function table(Table $table): Table
     {
         return $table->columns([
             TextColumn::make('name')->label('Nama Proyek')->searchable(),
             TextColumn::make('client.name')->label('Client'),
+            TextColumn::make('pdEmployee.name')->label('PD'),
+            TextColumn::make('pmEmployee.name')->label('PM'),
             TextColumn::make('start')->label('Mulai')->date(),
             TextColumn::make('end')->label('Selesai')->date(),
             TextColumn::make('type')->label('Tipe'),
@@ -137,8 +144,8 @@ class ProjectResource extends Resource
                 ->sortable(),
         ])
         ->filters([])
-        ->actions([]) // Tidak bisa edit
-        ->bulkActions([]); // Tidak bisa hapus
+        ->actions([])
+        ->bulkActions([]);
     }
 
     public static function getRelations(): array
@@ -158,12 +165,8 @@ class ProjectResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->withoutGlobalScopes()
-            ->where(function ($query) {
-                $userId = auth()->id();
-                $query->where('pm', $userId)
-                      ->orWhere('pd', $userId);
-            });
+            ->where('pm', auth()->user()->id)
+            ->orWhere('pd', auth()->user()->id);
     }
 
     public static function canEdit(Model $record): bool

@@ -3,40 +3,57 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Project extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'name', 'start', 'end', 'pd', 'pm', 'type',
-        'nilai_kontrak', 'roi_percent', 'roi_idr',
-        'client_id', 'status',
+        'name',
+        'start',
+        'end',
+        'pd',
+        'pm',
+        'type',
+        'nilai_kontrak',
+        'roi_percent',
+        'roi_idr',
+        'client_id',
+        'status',
     ];
 
     public $incrementing = false;
     protected $keyType = 'string';
 
-    public function pdEmployee() 
+    // Relasi ke employee sebagai PD
+    public function pdEmployee()
     {
         return $this->belongsTo(Employee::class, 'pd');
     }
 
-    public function pmEmployee() 
+    // Relasi ke employee sebagai PM
+    public function pmEmployee()
     {
         return $this->belongsTo(Employee::class, 'pm');
     }
 
+    // Relasi ke client
     public function client()
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Client::class, 'client_id');
     }
 
-    protected static function booted()
+    // Generate otomatis ID dan hitung ROI IDR
+    protected static function booted(): void
     {
         static::creating(function ($project) {
+            // Hitung ROI IDR jika data lengkap
             if ($project->nilai_kontrak !== null && $project->roi_percent !== null) {
                 $project->roi_idr = ($project->nilai_kontrak * $project->roi_percent) / 100;
             }
 
+            // Buat ID otomatis berdasarkan tipe
             $prefix = match ($project->type) {
                 'Pendampingan' => 'PE',
                 'Semi-Pendampingan' => 'SM',
@@ -46,8 +63,8 @@ class Project extends Model
             };
 
             $existingIds = static::where('id', 'like', $prefix . '%')->pluck('id')->toArray();
-            $usedNumbers = collect($existingIds)
-                ->map(fn($id) => intval(substr($id, 2)))
+            $existingNumbers = collect($existingIds)
+                ->map(fn ($id) => intval(substr($id, 2)))
                 ->sort()
                 ->values();
 
