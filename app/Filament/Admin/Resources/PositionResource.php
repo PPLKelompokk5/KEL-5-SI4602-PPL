@@ -25,7 +25,11 @@ class PositionResource extends Resource
     {
         return $form
             ->schema([
-                //
+                // Menambahkan input field untuk 'name'
+                Forms\Components\TextInput::make('name')
+                    ->label('Nama Posisi')
+                    ->required()  // Menjadikan field ini wajib diisi
+                    ->maxLength(255), // Mengatur panjang maksimal field
             ]);
     }
 
@@ -33,10 +37,14 @@ class PositionResource extends Resource
     {
         return $table
             ->columns([
-                //
+                // Menambahkan kolom 'name' pada tabel
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nama Posisi')
+                    ->sortable()
+                    ->searchable(), // Menambahkan fitur pencarian di kolom ini
             ])
             ->filters([
-                //
+                // Menambahkan filter jika diperlukan
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -64,3 +72,4 @@ class PositionResource extends Resource
         ];
     }
 }
+//commit
