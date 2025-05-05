@@ -4,6 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+// RUN COMMAND INI SEBELUM MIGRATE
+// composer require doctrine/dbal
+
 return new class extends Migration
 {
     /**
@@ -11,10 +14,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Schema::create('employees', function (Blueprint $table) {
-        //     $table->id();
-        //     $table->timestamps();
-        // });
+        Schema::table('reimbursts', function (Blueprint $table) {
+            $table->unsignedBigInteger('nominal')->change();
+        });
     }
 
     /**
@@ -22,6 +24,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('employees');
+        Schema::table('reimbursts', function (Blueprint $table) {
+            $table->decimal('nominal', 15, 2)->change();
+        });
     }
 };

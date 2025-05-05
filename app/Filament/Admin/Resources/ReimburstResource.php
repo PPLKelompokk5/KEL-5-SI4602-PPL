@@ -6,6 +6,8 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use App\Models\Reimburst;
+use App\Models\Project;
+use App\Models\Employee;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Card;
@@ -15,7 +17,11 @@ use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Admin\Resources\ReimburstResource\Pages;
-use App\Filament\Admin\Resources\ReimburstResource\RelationManagers;
+use App\Filament\Admin\Resources\ReimburstResource\Pages\ListReimbursts; // Corrected use statement
+use App\Filament\Admin\Resources\ReimburstResource\Pages\CreateReimburst; // Corrected use statement
+use App\Filament\Admin\Resources\ReimburstResource\Pages\EditReimburst;   // Corrected use statement
+
+// use App\Filament\Admin\Resources\ReimburstResource\RelationManagers;
 
 class ReimburstResource extends Resource
 {
@@ -29,16 +35,32 @@ class ReimburstResource extends Resource
             ->schema([
                 Card::make()
                     ->schema([
-                        TextInput::make('nama_reimburse'),
-                        TextInput::make('nama_pengaju'),
-                        TextInput::make('nama_project'),
-                        TextInput::make('nominal'),
+                        TextInput::make('nama_reimburse')
+                            ->required()
+                            ->maxLength(255),
+                        Select::make('nama_pengaju')
+                            ->label('Nama Pengaju')
+                            ->options(Employee::where('status', 'active')->pluck('name', 'name'))
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                        Select::make('project_id')
+                            ->label('Nama Project')
+                            ->relationship('project', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                        TextInput::make('nominal')
+                            ->required()
+                            ->numeric()
+                            ->prefix('Rp'),
                         Select::make('status_approval')
                             ->options([
                                 'pending' => 'Pending',
                                 'approved' => 'Approved',
                                 'rejected' =>  'Rejected',
-                            ]),
+                            ])
+                            ->required(),
                     ])
                     ->columns(2),
             ]);
@@ -48,11 +70,24 @@ class ReimburstResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nama_reimburse'),
-                TextColumn::make('nama_pengaju'),
-                TextColumn::make('nama_project'),
-                TextColumn::make('nominal'),
-                TextColumn::make('status_approval'),
+                TextColumn::make('nama_reimburse')
+                    ->searchable(),
+                TextColumn::make('nama_pengaju')
+                    ->searchable(),
+                TextColumn::make('project.name')
+                    ->label('Nama Project')
+                    ->searchable(),
+                TextColumn::make('nominal')
+                    ->money('IDR')
+                    ->sortable(),
+                TextColumn::make('status_approval')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        default => 'gray',
+                    }),
             ])
             ->filters([
                 //
@@ -68,8 +103,6 @@ class ReimburstResource extends Resource
             ]);
     }
 
-    // lupa banget ga pake kode jira nya yaallahhhh
-
     public static function getRelations(): array
     {
         return [
@@ -80,9 +113,9 @@ class ReimburstResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListReimbursts::route('/'),
-            'create' => Pages\CreateReimburst::route('/create'),
-            'edit' => Pages\EditReimburst::route('/{record}/edit'),
+            'index' => ListReimbursts::route('/'),
+            'create' => CreateReimburst::route('/create'),
+            'edit' => EditReimburst::route('/{record}/edit'),
         ];
     }
 }

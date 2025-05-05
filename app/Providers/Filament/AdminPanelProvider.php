@@ -23,22 +23,31 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('admin')
-            ->path('admin')
-            ->login()
-            ->brandName('Admin Panel')
+            ->id('admin') // ID panel admin
+            ->path('admin') // Path untuk panel admin
+            ->login() // Pastikan rute login terdaftar
+            ->brandName('Admin Panel') // Tambahkan brandName di sini
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Amber, // Warna utama untuk panel admin
             ])
-            ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
-            ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
+            ->discoverResources(
+                in: app_path('Filament/Admin/Resources'),
+                for: 'App\\Filament\\Admin\\Resources'
+            )
+            ->discoverPages(
+                in: app_path('Filament/Admin/Pages'),
+                for: 'App\\Filament\\Admin\\Pages'
+            )
             ->pages([
-                Pages\Dashboard::class,
+                Pages\Dashboard::class, // Halaman dashboard
             ])
-            ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
+            ->discoverWidgets(
+                in: app_path('Filament/Admin/Widgets'),
+                for: 'App\\Filament\\Admin\\Widgets'
+            )
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                Widgets\AccountWidget::class, // Widget akun
+                Widgets\FilamentInfoWidget::class, // Widget informasi Filament
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -52,7 +61,7 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                Authenticate::class, // Middleware autentikasi
             ]);
     }
 }
