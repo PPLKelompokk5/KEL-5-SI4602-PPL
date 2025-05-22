@@ -25,44 +25,45 @@ class LocationResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema([
-        Select::make('project_id')
-            ->label('Project')
-            ->relationship('project', 'id')
-            ->getOptionLabelFromRecordUsing(
-                fn ($record) => $record->client->name . ' - ' . $record->id
-            )
-            ->searchable()
-            ->preload()
-            ->required(),
+        return $form
+            ->schema([
+                Select::make('project_id')
+                    ->label('Project')
+                    ->relationship('project', 'name')
+                    ->required(),
 
-            TextInput::make('name')
-                ->label('Nama Lokasi')
-                ->required()
-                ->maxLength(255),
-        ]);
+                TextInput::make('name')
+                    ->label('Nama Lokasi')
+                    ->required()
+                    ->maxLength(255),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table->columns([
-            TextColumn::make('project.id')->label('Project'),
-            TextColumn::make('name')->label('Nama Lokasi'),
-        ])
-        ->filters([])
-        ->actions([
-            Tables\Actions\EditAction::make(),
-        ])
-        ->bulkActions([
-            Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]),
-        ]);
+        return $table
+            ->columns([
+                TextColumn::make('project.name')->label('Project'),
+                TextColumn::make('name')->label('Nama Lokasi'),
+            ])
+            ->filters([
+                //
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            //
+        ];
     }
 
     public static function getPages(): array
