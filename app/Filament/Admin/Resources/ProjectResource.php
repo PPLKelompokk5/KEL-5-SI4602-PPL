@@ -15,7 +15,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\SelectColumn;
-use Filament\Forms\Components\Grid;
 
 class ProjectResource extends Resource
 {
@@ -27,95 +26,99 @@ class ProjectResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Grid::make(2)->schema([
-                Select::make('client_id')
-                    ->label('Client')
-                    ->relationship('client', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+            TextInput::make('name')
+                ->label('Nama Proyek')
+                ->required()
+                ->unique(ignoreRecord: true)
+                ->validationMessages([
+                    'required' => 'Nama proyek wajib diisi.',
+                    'unique' => 'Nama proyek sudah terdaftar.',
+                ]),                
 
-                Select::make('type')
-                    ->label('Tipe Proyek')
-                    ->options([
-                        'Pendampingan' => 'Pendampingan',
-                        'Semi-Pendampingan' => 'Semi-Pendampingan',
-                        'Mentoring' => 'Mentoring',
-                        'Perpetuation' => 'Perpetuation',
-                    ])
-                    ->required(),
+            DatePicker::make('start')
+                ->label('Tanggal Mulai')
+                ->required()
+                ->reactive(),
 
-                DatePicker::make('start')
-                    ->label('Tanggal Mulai')
-                    ->required()
-                    ->reactive(),
-
-                DatePicker::make('end')
-                    ->label('Tanggal Selesai')
-                    ->required()
-                    ->reactive()
-                    ->afterStateUpdated(fn ($state, callable $set, callable $get) =>
-                        $set('valid_end', $state >= $get('start'))
-                    )
-                    ->rules([
-                        fn (callable $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+            DatePicker::make('end')
+                ->label('Tanggal Selesai')
+                ->required()
+                ->reactive()
+                ->afterStateUpdated(fn ($state, callable $set, callable $get) => 
+                    $set('valid_end', $state >= $get('start'))
+                )
+                ->rules([
+                    function (callable $get) {
+                        return function (string $attribute, $value, \Closure $fail) use ($get) {
                             if ($value < $get('start')) {
                                 $fail('Tanggal selesai tidak boleh lebih awal dari tanggal mulai.');
                             }
-                        },
-                    ]),
+                        };
+                    },
+                ]),
 
-                Select::make('pd')
-                    ->label('Project Director (PD)')
-                    ->relationship('pdEmployee', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+            Select::make('pd')
+                ->label('Project Director (PD)')
+                ->relationship('pdEmployee', 'name')
+                ->searchable()
+                ->preload()
+                ->required(),
 
-                Select::make('pm')
-                    ->label('Project Manager (PM)')
-                    ->relationship('pmEmployee', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+            Select::make('pm')
+                ->label('Project Manager (PM)')
+                ->relationship('pmEmployee', 'name')
+                ->searchable()
+                ->preload()
+                ->required(),
 
-                TextInput::make('nilai_kontrak')
-                    ->label('Nilai Kontrak')
-                    ->numeric()
-                    ->required(),
+            Select::make('client_id')
+                ->label('Client')
+                ->relationship('client', 'name')
+                ->searchable()
+                ->preload()
+                ->required(),
 
-                TextInput::make('roi_percent')
-                    ->label('ROI (%)')
-                    ->numeric()
-                    ->default(150)
-                    ->minValue(150)
-                    ->required()
-                    ->validationMessages([
-                        'min' => 'Minimal ROI adalah 150%.',
-                    ]),
+            Select::make('type')
+                ->label('Tipe Proyek')
+                ->options([
+                    'Pendampingan' => 'Pendampingan',
+                    'Semi-Pendampingan' => 'Semi-Pendampingan',
+                    'Mentoring' => 'Mentoring',
+                    'Perpetuation' => 'Perpetuation',
+                ])
+                ->required(),
 
-                TextInput::make('roi_idr')
-                    ->label('ROI (Rp)')
-                    ->disabled()
-                    ->dehydrated(false)
-                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
+            TextInput::make('nilai_kontrak')
+                ->label('Nilai Kontrak')
+                ->numeric()
+                ->required(),
 
-                Select::make('status')
-                    ->label('Status')
-                    ->options([
-                        1 => 'Ongoing',
-                        2 => 'Completed',
-                        3 => 'Stopped',
-                    ])
-                    ->default(1)
-                    ->required(),
-            ])
+            TextInput::make('roi_percent')
+                ->label('ROI (%)')
+                ->numeric()
+                ->required(),
+
+            TextInput::make('roi_idr')
+                ->label('ROI (Rp)')
+                ->disabled()
+                ->dehydrated(false)
+                ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
+
+            Select::make('status')
+                ->label('Status')
+                ->options([
+                    1 => 'Ongoing',
+                    2 => 'Completed',
+                    3 => 'Stopped',
+                ])
+                ->required(),
         ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table->columns([
+            TextColumn::make('name')->label('Nama Proyek')->searchable(),
             TextColumn::make('client.name')->label('Client'),
             TextColumn::make('pdEmployee.name')->label('PD'),
             TextColumn::make('pmEmployee.name')->label('PM'),
@@ -124,6 +127,10 @@ class ProjectResource extends Resource
             TextColumn::make('type')->label('Tipe'),
             TextColumn::make('nilai_kontrak')->label('Nilai Kontrak')->money('IDR', locale: 'id'),
             TextColumn::make('roi_percent')->label('ROI (%)')->formatStateUsing(fn ($state) => $state . '%'),
+            TextColumn::make('roi_idr')->label('ROI (Rp)')
+                ->formatStateUsing(fn ($record) => 'Rp ' . number_format($record->roi_idr, 0, ',', '.')),
+
+            // Select dropdown untuk status
             SelectColumn::make('status')
                 ->label('Status')
                 ->options([
