@@ -11,7 +11,8 @@ return new class extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->string('id', 10)->primary();
 
-            $table->string('name');
+            // $table->string('name'); // Dihapus karena tidak digunakan
+
             $table->date('start');
             $table->date('end');
 
@@ -25,14 +26,14 @@ return new class extends Migration
 
             $table->boolean('status')->default(true);
 
-            $table->unsignedBigInteger('client_id')->nullable(); // ✅ harus nullable untuk nullOnDelete
+            $table->unsignedBigInteger('client_id')->nullable();
 
             $table->timestamps();
 
             // Foreign keys
             $table->foreign('pd')->references('id')->on('employees')->nullOnDelete();
             $table->foreign('pm')->references('id')->on('employees')->nullOnDelete();
-            $table->foreign('client_id')->references('id')->on('clients')->nullOnDelete(); // ✅ now valid
+            $table->foreign('client_id')->references('id')->on('clients')->nullOnDelete();
         });
     }
 
