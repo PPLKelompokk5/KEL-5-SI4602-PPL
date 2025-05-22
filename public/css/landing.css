@@ -1,0 +1,132 @@
+/* Project Management System Landing Page Styles */
+:root {
+  --primary-color: #4a9ad8;
+  --primary-light: #a7d1f0;
+  --primary-dark: #2c7cb9;
+  --secondary-color: #f0f8ff;
+  --text-color: #333;
+  --text-light: #666;
+  --white: #fff;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-color) 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+}
+
+.welcome-card {
+  background-color: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 40px;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.logo {
+  margin-bottom: 20px;
+}
+
+.icon {
+  width: 60px;
+  height: 60px;
+  color: var(--primary-color);
+}
+
+.icon-sm {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+h1 {
+  color: var(--primary-dark);
+  margin-bottom: 16px;
+  font-size: 28px;
+}
+
+p {
+  color: var(--text-light);
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  color: var(--white);
+}
+
+.admin-btn {
+  background-color: var(--primary-color);
+}
+
+.admin-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.employee-btn {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.employee-btn:hover {
+  background-color: var(--secondary-color);
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.footer {
+  margin-top: 40px;
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .buttons {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .btn {
+    min-width: 200px;
+  }
+}
