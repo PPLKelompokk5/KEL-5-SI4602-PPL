@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 class McsRoiResource extends Resource
 {
     protected static ?string $model = McsRoi::class;
-    protected static ?string $navigationGroup = 'Presensi';
+    protected static ?string $navigationGroup = 'MCS';
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
     protected static ?string $navigationLabel = 'MCS ROI';
 
