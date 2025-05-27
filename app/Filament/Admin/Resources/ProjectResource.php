@@ -118,19 +118,16 @@ class ProjectResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('name')->label('Nama Proyek')->searchable(),
             TextColumn::make('client.name')->label('Client'),
             TextColumn::make('pdEmployee.name')->label('PD'),
             TextColumn::make('pmEmployee.name')->label('PM'),
             TextColumn::make('start')->label('Mulai')->date(),
             TextColumn::make('end')->label('Selesai')->date(),
             TextColumn::make('type')->label('Tipe'),
-            TextColumn::make('nilai_kontrak')->label('Nilai Kontrak')->money('IDR', locale: 'id'),
+            TextColumn::make('nilai_kontrak')
+                ->label('Nilai Kontrak')
+                ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
             TextColumn::make('roi_percent')->label('ROI (%)')->formatStateUsing(fn ($state) => $state . '%'),
-            TextColumn::make('roi_idr')->label('ROI (Rp)')
-                ->formatStateUsing(fn ($record) => 'Rp ' . number_format($record->roi_idr, 0, ',', '.')),
-
-            // Select dropdown untuk status
             SelectColumn::make('status')
                 ->label('Status')
                 ->options([
