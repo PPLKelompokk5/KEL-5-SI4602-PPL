@@ -84,7 +84,7 @@
 <body class="min-h-screen gradient-bg">
     <!-- Navigation -->
     <nav class="bg-white/20 backdrop-blur-md border-b border-orange-200/30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="px-6 sm:px-8 lg:px-12">
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
@@ -297,11 +297,11 @@
                         </div>
                         <div class="flex items-center space-x-2 text-gray-300">
                             <i class="fas fa-phone text-orange-400"></i>
-                            <span>+62 812 345 6789</span>
+                            <span>+62 123 456 7890</span>
                         </div>
                         <div class="flex items-center space-x-2 text-gray-300">
                             <i class="fas fa-map-marker-alt text-orange-400"></i>
-                            <span>Bandung, Indonesia</span>
+                            <span>Jakarta, Indonesia</span>
                         </div>
                     </div>
                 </div>
