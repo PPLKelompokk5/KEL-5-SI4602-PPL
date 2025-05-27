@@ -301,7 +301,7 @@
                         </div>
                         <div class="flex items-center space-x-2 text-gray-300">
                             <i class="fas fa-map-marker-alt text-orange-400"></i>
-                            <span>Jakarta, Indonesia</span>
+                            <span>Bandung, Indonesia</span>
                         </div>
                     </div>
                 </div>
