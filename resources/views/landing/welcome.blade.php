@@ -297,7 +297,7 @@
                         </div>
                         <div class="flex items-center space-x-2 text-gray-300">
                             <i class="fas fa-phone text-orange-400"></i>
-                            <span>+62 123 456 7890</span>
+                            <span>+62 812 345 6789</span>
                         </div>
                         <div class="flex items-center space-x-2 text-gray-300">
                             <i class="fas fa-map-marker-alt text-orange-400"></i>
