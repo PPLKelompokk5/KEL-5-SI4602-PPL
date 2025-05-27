@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
 
-            // Ganti dari foreignId menjadi string agar cocok dengan projects.id
+            // project_id adalah string (varchar 10)
             $table->string('project_id', 10);
+
             $table->string('name');
+            $table->boolean('status')->default(true); // default aktif
             $table->timestamps();
 
             // Foreign key ke projects.id (string)
@@ -32,6 +34,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('locations', function (Blueprint $table) {
+            $table->dropForeign(['project_id']);
+        });
+
         Schema::dropIfExists('locations');
     }
 };
