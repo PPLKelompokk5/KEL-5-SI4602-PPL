@@ -26,58 +26,32 @@ class ProjectResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')
-                ->label('Nama Proyek')
-                ->required()
-                ->unique(ignoreRecord: true)
-                ->validationMessages([
-                    'required' => 'Nama proyek wajib diisi.',
-                    'unique' => 'Nama proyek sudah terdaftar.',
-                ]),                
-
-            DatePicker::make('start')
-                ->label('Tanggal Mulai')
-                ->required()
-                ->reactive(),
-
-            DatePicker::make('end')
-                ->label('Tanggal Selesai')
-                ->required()
-                ->reactive()
-                ->afterStateUpdated(fn ($state, callable $set, callable $get) => 
-                    $set('valid_end', $state >= $get('start'))
-                )
-                ->rules([
-                    function (callable $get) {
-                        return function (string $attribute, $value, \Closure $fail) use ($get) {
-                            if ($value < $get('start')) {
-                                $fail('Tanggal selesai tidak boleh lebih awal dari tanggal mulai.');
-                            }
-                        };
-                    },
-                ]),
-
-            Select::make('pd')
-                ->label('Project Director (PD)')
-                ->relationship('pdEmployee', 'name')
-                ->searchable()
-                ->preload()
-                ->required(),
-
-            Select::make('pm')
-                ->label('Project Manager (PM)')
-                ->relationship('pmEmployee', 'name')
-                ->searchable()
-                ->preload()
-                ->required(),
-
+            // Baris 1
             Select::make('client_id')
                 ->label('Client')
                 ->relationship('client', 'name')
                 ->searchable()
                 ->preload()
+                ->required()
+                ->columnSpanFull(),
+
+            // Baris 2
+            DatePicker::make('start')
+                ->label('Tanggal Mulai')
                 ->required(),
 
+            DatePicker::make('end')
+                ->label('Tanggal Selesai')
+                ->required()
+                ->rules([
+                    fn (callable $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                        if ($value < $get('start')) {
+                            $fail('Tanggal selesai tidak boleh lebih awal dari tanggal mulai.');
+                        }
+                    },
+                ]),
+
+            // Baris 3
             Select::make('type')
                 ->label('Tipe Proyek')
                 ->options([
@@ -86,24 +60,51 @@ class ProjectResource extends Resource
                     'Mentoring' => 'Mentoring',
                     'Perpetuation' => 'Perpetuation',
                 ])
+                ->required()
+                ->columnSpanFull(),
+
+            // Baris 4
+            Select::make('pm')
+                ->label('Project Manager (PM)')
+                ->relationship('pmEmployee', 'name')
+                ->searchable()
+                ->preload()
                 ->required(),
 
+            Select::make('pd')
+                ->label('Project Director (PD)')
+                ->relationship('pdEmployee', 'name')
+                ->searchable()
+                ->preload()
+                ->required(),
+
+            // Baris 5
             TextInput::make('nilai_kontrak')
                 ->label('Nilai Kontrak')
                 ->numeric()
-                ->required(),
+                ->required()
+                ->reactive(),
 
             TextInput::make('roi_percent')
                 ->label('ROI (%)')
                 ->numeric()
-                ->required(),
+                ->required()
+                ->default(150)
+                ->minValue(150)
+                ->reactive(),
 
+            // Baris 6
             TextInput::make('roi_idr')
                 ->label('ROI (Rp)')
                 ->disabled()
                 ->dehydrated(false)
-                ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
+                ->formatStateUsing(function ($state, callable $get) {
+                    $kontrak = $get('nilai_kontrak') ?? 0;
+                    $persen = $get('roi_percent') ?? 0;
+                    return 'Rp ' . number_format(($kontrak * $persen / 100), 0, ',', '.');
+                }),
 
+            // Baris 7
             Select::make('status')
                 ->label('Status')
                 ->options([
@@ -111,8 +112,9 @@ class ProjectResource extends Resource
                     2 => 'Completed',
                     3 => 'Stopped',
                 ])
+                ->default(1)
                 ->required(),
-        ]);
+        ])->columns(2);
     }
 
     public static function table(Table $table): Table
