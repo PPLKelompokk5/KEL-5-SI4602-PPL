@@ -2,16 +2,19 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Filament\Admin\Resources\PositionResource\Pages;
-use App\Filament\Admin\Resources\PositionResource\RelationManagers;
-use App\Models\Position;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Position;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Spatie\Permission\Models\Role;
+use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Admin\Resources\PositionResource\Pages;
+use App\Filament\Admin\Resources\PositionResource\RelationManagers;
+
 
 class PositionResource extends Resource
 {
@@ -30,6 +33,14 @@ class PositionResource extends Resource
                     ->label('Nama Posisi')
                     ->required()  // Menjadikan field ini wajib diisi
                     ->maxLength(255), // Mengatur panjang maksimal field
+
+                Select::make('role_name')
+                    ->label('Role')
+                    ->options(Role::all()->pluck('name', 'name'))
+                    ->searchable()
+                    ->preload()
+                    ->required()
+                    ->helperText('Pilih role yang sesuai dengan posisi ini'),
             ]);
     }
 
@@ -42,9 +53,18 @@ class PositionResource extends Resource
                     ->label('Nama Posisi')
                     ->sortable()
                     ->searchable(), // Menambahkan fitur pencarian di kolom ini
+
+                Tables\Columns\TextColumn::make('role_name')
+                    ->label('Role')
+                    ->badge()
+                    ->color('info')
+                    ->sortable(),
             ])
             ->filters([
                 // Menambahkan filter jika diperlukan
+                Tables\Filters\SelectFilter::make('role_name')
+                    ->label('Role')
+                    ->options(Role::all()->pluck('name', 'name')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

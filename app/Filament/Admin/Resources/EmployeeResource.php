@@ -41,10 +41,34 @@ class EmployeeResource extends Resource
                 ->maxLength(255)
                 ->label('Password'),
 
+            // Select::make('position_id')
+            //     ->label('Position')
+            //     ->relationship('position', 'name')
+            //     ->required(),
+
             Select::make('position_id')
-                ->label('Position')
+                ->label('Posisi')
                 ->relationship('position', 'name')
-                ->required(),
+                ->required()
+                ->searchable()
+                ->preload()
+                ->live()
+                ->afterStateUpdated(function ($state, callable $set) {
+                    // Otomatis assign role berdasarkan posisi
+                    if ($state) {
+                        $position = Position::find($state);
+                        if ($position && $position->role_name) {
+                            $set('role_name', $position->role_name);
+                        }
+                    }
+                }),
+
+            TextInput::make('role_name')
+                ->label('Role')
+                ->required()
+                ->disabled()
+                ->helperText('Role akan otomatis terisi berdasarkan posisi yang dipilih'),
+
 
             Select::make('status')
                 ->options([
@@ -62,8 +86,16 @@ class EmployeeResource extends Resource
             Tables\Columns\TextColumn::make('email')->searchable(),
             Tables\Columns\TextColumn::make('position.name')->label('Position')->sortable(),
             Tables\Columns\TextColumn::make('status')->badge(),
+            Tables\Columns\TextColumn::make('role_name')
+                ->label('Role')
+                ->badge()
+                ->color('info'),
         ])
-        ->filters([])
+        ->filters([
+            Tables\Filters\SelectFilter::make('position_id')
+                ->label('Posisi')
+                ->relationship('position', 'name'),
+        ])
         ->actions([
             Tables\Actions\EditAction::make(),
         ])
