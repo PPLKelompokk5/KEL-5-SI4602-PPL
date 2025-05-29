@@ -6,6 +6,9 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;   // hapus jika tak dipakai
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 
 /**
  * @property int         $id
@@ -20,10 +23,13 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+    use HasRoles;
 
     /* -----------------------------------------------------------------
      |  Mass assignment
      |----------------------------------------------------------------- */
+    protected $guard_name = 'web';
+
     protected $fillable = [
         'name',
         'email',
@@ -65,4 +71,13 @@ class User extends Authenticatable
     return $this->hasOne(Karyawan::class, 'user_id');
 }
 
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Hanya super admin yang bisa akses admin panel
+        if ($panel->getId() === 'admin') {
+            return $this->hasRole('super_admin');
+        }
+
+        return false;
+    }
 }

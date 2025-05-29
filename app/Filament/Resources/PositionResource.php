@@ -25,10 +25,13 @@ class PositionResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')
+                TextInput::make('nama')
                     ->label('Nama Posisi')
                     ->required()
                     ->maxLength(255),
+
+                Select::make('roles')
+                    ->relationship('roles','name'),
             ]);
     }
 
@@ -36,10 +39,13 @@ class PositionResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')
+                TextColumn::make('nama')
                 ->label('Nama Posisi')
                 ->sortable()
                 ->searchable(),
+
+                TextColumn::make('posisi')
+                ->label('Posisi'),
             ])
             ->filters([
                 //
