@@ -21,9 +21,8 @@ use Filament\Forms\Components\Checkbox;
 class KpiResource extends Resource
 {
     protected static ?string $model = Kpi::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationGroup = 'MCS';
-    protected static ?string $navigationLabel = 'Kpis';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationLabel = 'KPI';
 
     public static function form(Form $form): Form
     {
@@ -47,36 +46,29 @@ class KpiResource extends Resource
                     ->schema([
                         Select::make('indikator')
                             ->label('Indikator')
-                            ->options(fn (Get $get) =>
-                                Kpi::where('project_id', $get('project_id'))
-                                    ->pluck('indikator', 'indikator')
-                            )
+                            ->options([
+                                'Mandays' => 'Mandays',
+                                'Budget' => 'Budget',
+                                'ROI' => 'ROI',
+                            ])
                             ->required()
-                            ->visible(fn (Get $get) => !$get('tambah_indikator_baru'))
                             ->live()
-                            ->afterStateUpdated(function ($state, Set $set, Get $get) {
-                                $uom = Kpi::where('project_id', $get('project_id'))
-                                    ->where('indikator', $state)
-                                    ->value('uom');
+                            ->afterStateUpdated(function ($state, Set $set) {
+                                $uoms = [
+                                    'Mandays' => 'Hari',
+                                    'Budget' => 'Rp',
+                                    'ROI' => '%',
+                                ];
 
-                                if ($uom) {
-                                    $set('uom', $uom);
+                                if (isset($uoms[$state])) {
+                                    $set('uom', $uoms[$state]);
                                 }
                             }),
-
-                        TextInput::make('indikator')
-                            ->label('Indikator Baru')
-                            ->required()
-                            ->visible(fn (Get $get) => $get('tambah_indikator_baru')),
 
                         TextInput::make('uom')
                             ->required()
                             ->label('UOM'),
                     ]),
-
-                Checkbox::make('tambah_indikator_baru')
-                    ->label('Tambah indikator baru')
-                    ->reactive(),
 
                 Forms\Components\Grid::make(2)
                     ->schema([
@@ -120,19 +112,11 @@ class KpiResource extends Resource
                             ->numeric()
                             ->required()
                             ->live(debounce: 300)
-                            ->rules(fn (Get $get) => [
-                                function ($attribute, $value, $fail) use ($get) {
-                                    $target = $get('target');
-                                    if (is_numeric($target) && $value >= $target) {
-                                        $fail('The base must be less than the target.');
-                                    }
-                                },
-                            ])
                             ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                 $base = floatval($state);
                                 $target = floatval($get('target'));
 
-                                if (!is_numeric($target) || $base >= $target) {
+                                if (!is_numeric($target) || !is_numeric($base) || $base === $target) {
                                     foreach (range(1, 10) as $i) {
                                         $set("level_$i", null);
                                     }
@@ -146,19 +130,11 @@ class KpiResource extends Resource
                             ->numeric()
                             ->required()
                             ->live(debounce: 300)
-                            ->rules(fn (Get $get) => [
-                                function ($attribute, $value, $fail) use ($get) {
-                                    $base = $get('base');
-                                    if (is_numeric($base) && $value <= $base) {
-                                        $fail('The target must be greater than the base.');
-                                    }
-                                },
-                            ])
                             ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                 $target = floatval($state);
                                 $base = floatval($get('base'));
 
-                                if (!is_numeric($base) || $base >= $target) {
+                                if (!is_numeric($target) || !is_numeric($base) || $base === $target) {
                                     foreach (range(1, 10) as $i) {
                                         $set("level_$i", null);
                                     }
@@ -175,7 +151,7 @@ class KpiResource extends Resource
                             TextInput::make("level_$i")
                                 ->label("Level $i")
                                 ->numeric()
-                                ->disabled()
+                                ->readOnly()
                         )->toArray()
                     ),
             ]);
@@ -186,9 +162,17 @@ class KpiResource extends Resource
         $base = floatval($base);
         $target = floatval($target);
 
-        if ($base > 0 && $target > $base) {
-            $selisih = ($target - $base) / 4;
+        if ($base <= 0 || $target <= 0 || $base === $target) {
+            foreach (range(1, 10) as $i) {
+                $set("level_$i", null);
+            }
+            return;
+        }
 
+        $selisih = abs($target - $base) / 4;
+
+        if ($target > $base) {
+            // Kenaikan normal
             $set('level_4', $base);
             $set('level_3', $base - $selisih);
             $set('level_2', $base - 2 * $selisih);
@@ -200,12 +184,19 @@ class KpiResource extends Resource
             $set('level_9', $target + $selisih);
             $set('level_10', $target + 2 * $selisih);
         } else {
-            foreach (range(1, 10) as $i) {
-                $set("level_$i", null);
-            }
+            // Penurunan
+            $set('level_4', $base);
+            $set('level_3', $base + $selisih);
+            $set('level_2', $base + 2 * $selisih);
+            $set('level_1', $base + 3 * $selisih);
+            $set('level_5', $base - $selisih);
+            $set('level_6', $base - 2 * $selisih);
+            $set('level_7', $base - 3 * $selisih);
+            $set('level_8', $target);
+            $set('level_9', $target - $selisih);
+            $set('level_10', $target - 2 * $selisih);
         }
     }
-
     public static function table(Table $table): Table
     {
         return $table
