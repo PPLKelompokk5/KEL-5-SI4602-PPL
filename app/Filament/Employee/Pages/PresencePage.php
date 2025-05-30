@@ -3,6 +3,7 @@
 namespace App\Filament\Employee\Pages;
 
 use App\Models\Project;
+use App\Models\Location;
 use App\Models\Presence;
 use Filament\Pages\Page;
 use Filament\Forms;
@@ -34,8 +35,34 @@ class PresencePage extends Page implements Forms\Contracts\HasForms
         return [
             Select::make('project_id')
                 ->label('Pilih Project')
-                ->options(Project::pluck('name', 'id'))
+                ->options(
+                    Project::with('client')->get()->mapWithKeys(function ($project) {
+                        return [
+                            $project->id => $project->id . ' - ' . ($project->client->name ?? '-'),
+                        ];
+                    })
+                )
+                ->searchable()
+                ->preload()
+                ->live()
                 ->required(),
+
+            Select::make('location_id')
+                ->label('Pilih Lokasi')
+                ->options(function (callable $get) {
+                    $projectId = $get('project_id');
+                    if (!$projectId) return [];
+
+                    return Location::where('project_id', $projectId)
+                        ->get()
+                        ->mapWithKeys(fn ($loc) => [
+                            $loc->id => $loc->project_id . ' - ' . $loc->name,
+                        ])
+                        ->toArray();
+                })
+                ->required()
+                ->disabled(fn (callable $get) => !$get('project_id'))
+                ->reactive(),
         ];
     }
 
@@ -48,25 +75,35 @@ class PresencePage extends Page implements Forms\Contracts\HasForms
 
     public function absen(): void
     {
-        // Validate all form inputs
         $this->form->validate();
-
-        // Retrieve form state
         $state = $this->form->getState();
 
-        // Create presence record
+        $alreadyExists = Presence::where('employees_id', Auth::guard('employee')->id())
+            ->where('project_id', $state['project_id'])
+            ->where('location_id', $state['location_id'])
+            ->whereDate('date', Carbon::today())
+            ->exists();
+
+        if ($alreadyExists) {
+            Notification::make()
+                ->warning()
+                ->title('Presensi Gagal')
+                ->body('Kamu sudah absen hari ini untuk lokasi dan project yang sama.')
+                ->send();
+            return;
+        }
+
         Presence::create([
             'employees_id' => Auth::guard('employee')->id(),
             'project_id' => $state['project_id'],
+            'location_id' => $state['location_id'],
             'date' => Carbon::today()->toDateString(),
             'timestamp' => Carbon::now()->toTimeString(),
         ]);
 
-        // Reset form inputs and pagination
         $this->form->fill();
         $this->resetPage();
 
-        // Notify user of success
         Notification::make()
             ->success()
             ->title('Absen Berhasil')
@@ -75,7 +112,7 @@ class PresencePage extends Page implements Forms\Contracts\HasForms
 
     public function getLatestPresencesProperty()
     {
-        return Presence::with('project')
+        return Presence::with(['project', 'location'])
             ->where('employees_id', Auth::guard('employee')->id())
             ->latest('date')
             ->paginate(5);
