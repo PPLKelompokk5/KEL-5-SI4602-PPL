@@ -18,6 +18,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Models\Employee;
+use App\Filament\Employee\Pages\Auth\Login;
 
 class EmployeePanelProvider extends PanelProvider
 {
@@ -26,7 +27,7 @@ class EmployeePanelProvider extends PanelProvider
         return $panel
             ->id('employee')
             ->path('employee')
-            ->login()
+            ->login(Login::class)
             ->authGuard('employee')
             ->brandName('Employee Panel')
             ->colors([
