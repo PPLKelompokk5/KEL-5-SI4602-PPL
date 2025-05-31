@@ -22,6 +22,7 @@ class KpiResource extends Resource
 {
     protected static ?string $model = Kpi::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationGroup = 'KPI';
     protected static ?string $navigationLabel = 'KPI';
 
     public static function form(Form $form): Form
@@ -57,7 +58,7 @@ class KpiResource extends Resource
                                 $uoms = [
                                     'Mandays' => 'Hari',
                                     'Budget' => 'Rp',
-                                    'ROI' => '%',
+                                    'ROI' => 'Rp',
                                 ];
 
                                 if (isset($uoms[$state])) {
