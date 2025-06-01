@@ -12,6 +12,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Models\Reimburst;
 
 class KpiAktualResource extends Resource
 {
@@ -37,7 +38,7 @@ class KpiAktualResource extends Resource
                 ->afterStateUpdated(function ($state, callable $set) {
                     $kpi = Kpi::find($state);
 
-                    if (!$kpi || $kpi->indikator !== 'Mandays') {
+                    if (!$kpi) {
                         $set('nilai', null);
                         $set('target', null);
                         $set('level', null);
@@ -46,24 +47,34 @@ class KpiAktualResource extends Resource
                     }
 
                     $tanggal = Carbon::createFromFormat('Ym', $kpi->bulan);
-                    $jumlahHadir = Presence::where('project_id', $kpi->project_id)
-                        ->whereMonth('date', $tanggal->month)
-                        ->whereYear('date', $tanggal->year)
-                        ->count();
+                    $nilai = 0;
+
+                    if ($kpi->indikator === 'Mandays') {
+                        $nilai = Presence::where('project_id', $kpi->project_id)
+                            ->whereMonth('date', $tanggal->month)
+                            ->whereYear('date', $tanggal->year)
+                            ->count();
+                    } else {
+                        $nilai = Reimburst::where('project_id', $kpi->project_id)
+                            ->where('status_approval', 'approved')
+                            ->whereMonth('created_at', $tanggal->month)
+                            ->whereYear('created_at', $tanggal->year)
+                            ->sum('nominal');
+                    }
 
                     $closestLevel = 1;
                     $minDiff = null;
 
                     foreach (range(1, 10) as $i) {
                         $kolom = 'level_' . $i;
-                        $diff = abs($jumlahHadir - $kpi->$kolom);
+                        $diff = abs($nilai - $kpi->$kolom);
                         if (is_null($minDiff) || $diff < $minDiff) {
                             $closestLevel = $i;
                             $minDiff = $diff;
                         }
                     }
 
-                    $set('nilai', $jumlahHadir);
+                    $set('nilai', $nilai);
                     $set('target', $kpi->target);
                     $set('level', $closestLevel);
                     $set('skor', $closestLevel * 25);
@@ -109,7 +120,7 @@ class KpiAktualResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
-            ->bulkActions([
+            ->bulkActions(actions: [
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
