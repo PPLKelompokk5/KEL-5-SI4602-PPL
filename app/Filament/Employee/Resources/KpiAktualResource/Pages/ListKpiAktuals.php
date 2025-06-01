@@ -13,7 +13,8 @@ class ListKpiAktuals extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Rekap KPI') // Ganti label tombol
         ];
     }
 }
