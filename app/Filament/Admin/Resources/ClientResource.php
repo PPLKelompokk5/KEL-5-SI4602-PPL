@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rule;
 
 class ClientResource extends Resource
 {
@@ -29,7 +30,8 @@ class ClientResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->label('Client Name')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->unique(ignoreRecord: true),
             ]);
     }
 
