@@ -2,107 +2,108 @@
 
 namespace App\Policies;
 
-use App\Models\Employee;
 use App\Models\Client;
+use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 class ClientPolicy
 {
     use HandlesAuthorization;
 
     /**
-     * Determine whether the employee can view any models.
+     * Determine whether the User can view any models.
      */
-    public function viewAny(Employee $employee): bool
+    public function viewAny(Authenticatable $User): bool
     {
-        return $employee->can('view_any_client');
+        return $User->can('view_any_client');
     }
 
     /**
-     * Determine whether the employee can view the model.
+     * Determine whether the User can view the model.
      */
-    public function view(Employee $employee, Client $client): bool
+    public function view(Authenticatable $User, Client $client): bool
     {
-        return $employee->can('view_client');
+        return $User->can('view_client');
     }
 
     /**
-     * Determine whether the employee can create models.
+     * Determine whether the User can create models.
      */
-    public function create(Employee $employee): bool
+    public function create(Authenticatable $User): bool
     {
-        return $employee->can('create_client');
+        return $User->can('create_client');
     }
 
     /**
-     * Determine whether the employee can update the model.
+     * Determine whether the User can update the model.
      */
-    public function update(Employee $employee, Client $client): bool
+    public function update(Authenticatable $User, Client $client): bool
     {
-        return $employee->can('update_client');
+        return $User->can('update_client');
     }
 
     /**
-     * Determine whether the employee can delete the model.
+     * Determine whether the User can delete the model.
      */
-    public function delete(Employee $employee, Client $client): bool
+    public function delete(Authenticatable $User, Client $client): bool
     {
-        return $employee->can('delete_client');
+        return $User->can('delete_client');
     }
 
     /**
-     * Determine whether the employee can bulk delete.
+     * Determine whether the User can bulk delete.
      */
-    public function deleteAny(Employee $employee): bool
+    public function deleteAny(Authenticatable $User): bool
     {
-        return $employee->can('delete_any_client');
+        return $User->can('delete_any_client');
     }
 
     /**
-     * Determine whether the employee can permanently delete.
+     * Determine whether the User can permanently delete.
      */
-    public function forceDelete(Employee $employee, Client $client): bool
+    public function forceDelete(Authenticatable $User, Client $client): bool
     {
-        return $employee->can('force_delete_client');
+        return $User->can('force_delete_client');
     }
 
     /**
-     * Determine whether the employee can permanently bulk delete.
+     * Determine whether the User can permanently bulk delete.
      */
-    public function forceDeleteAny(Employee $employee): bool
+    public function forceDeleteAny(Authenticatable $User): bool
     {
-        return $employee->can('force_delete_any_client');
+        return $User->can('force_delete_any_client');
     }
 
     /**
-     * Determine whether the employee can restore.
+     * Determine whether the User can restore.
      */
-    public function restore(Employee $employee, Client $client): bool
+    public function restore(Authenticatable $User, Client $client): bool
     {
-        return $employee->can('restore_client');
+        return $User->can('restore_client');
     }
 
     /**
-     * Determine whether the employee can bulk restore.
+     * Determine whether the User can bulk restore.
      */
-    public function restoreAny(Employee $employee): bool
+    public function restoreAny(Authenticatable $User): bool
     {
-        return $employee->can('restore_any_client');
+        return $User->can('restore_any_client');
     }
 
     /**
-     * Determine whether the employee can replicate.
+     * Determine whether the User can replicate.
      */
-    public function replicate(Employee $employee, Client $client): bool
+    public function replicate(Authenticatable $User, Client $client): bool
     {
-        return $employee->can('replicate_client');
+        return $User->can('replicate_client');
     }
 
     /**
-     * Determine whether the employee can reorder.
+     * Determine whether the User can reorder.
      */
-    public function reorder(Employee $employee): bool
+    public function reorder(Authenticatable $User): bool
     {
-        return $employee->can('reorder_client');
+        return $User->can('reorder_client');
     }
 }

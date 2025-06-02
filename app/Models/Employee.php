@@ -14,7 +14,7 @@ class Employee extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable, HasRoles;
 
-    protected $guard_name = 'employee';
+    protected $guard_name = 'web';
 
     protected $fillable = [
         'name',
@@ -51,6 +51,7 @@ class Employee extends Authenticatable implements FilamentUser
      */
     public function canAccessPanel(Panel $panel): bool
     {
+
         // Super admin bisa akses semua panel
         if ($this->hasRole('super_admin')) {
             return true;
@@ -70,10 +71,13 @@ class Employee extends Authenticatable implements FilamentUser
         parent::boot();
 
         static::saved(function ($employee) {
-            // Sync role dengan Shield
             if ($employee->role_name) {
                 $employee->syncRoles([$employee->role_name]);
             }
         });
     }
+
+
+
+
 }
