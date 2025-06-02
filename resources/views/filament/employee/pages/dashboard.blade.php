@@ -1,6 +1,5 @@
 <x-filament::page>
-    <h1 class="text-2xl font-bold mb-4">Halo Karyawan 👷</h1>
-    <p class="mb-6 text-gray-600">Selamat bekerja! Ini dashboard khusus pegawai.</p>
+    <h1 class="text-2xl font-bold mb-4">Selamat Datang dan Selamat Berkerja</h1>
 
     {{-- PROJECT ANDA --}}
     <h2 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2 text-center">Project Anda</h2>
@@ -13,48 +12,70 @@
         @endforeach
     </div>
 
-    {{-- KPI AKTUAL --}}
-    <h2 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2 text-center">KPI Aktual</h2>
-    <div class="flex flex-col md:flex-row gap-4 mb-6">
-        <div class="flex-1">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Project</label>
-            <select wire:model="selectedProject" class="w-full border-gray-300 rounded-md shadow-sm">
-                <option value="">Semua Project</option>
-                @foreach ($this->projects as $id => $name)
-                    <option value="{{ $id }}">{{ $name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="flex-1">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Bulan Tahun</label>
-            <select wire:model="selectedMonth" class="w-full border-gray-300 rounded-md shadow-sm">
-                <option value="all">Semua</option>
-                @foreach ($this->availableMonths as $val => $label)
-                    <option value="{{ $val }}">{{ $label }}</option>
-                @endforeach
-            </select>
-        </div>
+    {{-- KPI GRAFIK --}}
+    <h2 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2 text-center">KPI Aktual (Grafik)</h2>
+
+    <div class="bg-white rounded-xl shadow border p-6 mt-6">
+        <canvas id="kpiChart" height="150"></canvas>
     </div>
 
-    {{-- TOTAL SKOR --}}
-    <div class="bg-orange-50 rounded-xl p-4 mb-6 shadow">
-        <p class="text-sm text-gray-700">Total Skor:</p>
-        <p class="text-2xl font-bold text-orange-600">{{ $this->totalScore }}</p>
-    </div>
+    @once
+        @push('scripts')
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                    const ctx = document.getElementById("kpiChart").getContext("2d");
 
-    {{-- KPI GRUP PER BULAN --}}
-    @forelse ($this->kpiByMonth as $bulan => $items)
-        <div class="bg-white rounded-xl p-4 mb-4 shadow border">
-            <h3 class="text-md font-semibold text-gray-800 mb-2">{{ $bulan }}</h3>
-            <ul class="list-disc pl-6 text-sm text-gray-700">
-                @foreach ($items as $item)
-                    <li>{{ $item->kpi->indikator }} - {{ $item->kpi->project_id }} - Nilai: {{ $item->nilai }} - Skor: {{ $item->skor }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @empty
-        <div class="bg-white rounded-xl p-4 mb-4 shadow border text-sm text-gray-600">
-            Tidak ada data KPI Aktual.
-        </div>
-    @endforelse
+                    const chartData = @json($this->kpiChartData);
+
+                    const data = {
+                        labels: chartData.map(item => item.bulan),
+                        datasets: [
+                            {
+                                label: "Mandays",
+                                backgroundColor: "#34d399",
+                                data: chartData.map(item => item.Mandays),
+                            },
+                            {
+                                label: "Budget",
+                                backgroundColor: "#f97316",
+                                data: chartData.map(item => item.Budget),
+                            },
+                            {
+                                label: "ROI",
+                                backgroundColor: "#60a5fa",
+                                data: chartData.map(item => item.ROI),
+                            },
+                        ]
+                    };
+
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Grafik KPI per Bulan (Gabungan Project)'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Skor'
+                                    }
+                                }
+                            }
+                        },
+                    });
+                });
+            </script>
+        @endpush
+    @endonce
 </x-filament::page>
