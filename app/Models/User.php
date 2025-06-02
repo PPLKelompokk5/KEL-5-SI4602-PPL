@@ -50,7 +50,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         // Sejak Laravel 10, tipe 'hashed' akan otomatis Hash::make()
-        'password'          => 'hashed',
+        'password' => 'hashed',
     ];
 
     /* -----------------------------------------------------------------
@@ -68,9 +68,13 @@ class User extends Authenticatable
      |----------------------------------------------------------------- */
     public function canAccessPanel(Panel $panel): bool
     {
-        // Hanya super admin yang bisa akses admin panel
+
         if ($panel->getId() === 'admin') {
             return $this->hasRole('super_admin');
+        }
+
+        if ($panel->getId() == 'employee') {
+            return true;
         }
 
         return false;

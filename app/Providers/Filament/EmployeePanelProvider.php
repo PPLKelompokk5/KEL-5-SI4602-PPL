@@ -28,7 +28,7 @@ class EmployeePanelProvider extends PanelProvider
             ->id('employee')
             ->path('employee')
             ->login()
-            ->authGuard('employee')
+            ->authGuard('web')
             ->brandName('Employee Panel')
             ->colors([
                 'primary' => Color::Amber,
@@ -57,9 +57,8 @@ class EmployeePanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-             ->plugins([
+            ->plugins([
                 FilamentShieldPlugin::make(),
-
             ]);
     }
 }

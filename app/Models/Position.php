@@ -11,11 +11,18 @@ class Position extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name','role_name'];
+    protected $fillable = ['name', 'role_name'];
 
     public function employees(): HasMany
     {
         return $this->hasMany(Employee::class);
     }
+
+
+    public function getRoleNameAttribute()
+    {
+        return $this->attributes['role_name'];
+    }
+
 }
 //comit
