@@ -25,7 +25,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin') // ID panel admin
             ->path('admin') // Path untuk panel admin
-            ->login() // Pastikan rute login terdaftar
+            ->login() // login admin
             ->brandName('Admin Panel') // Tambahkan brandName di sini
             ->colors([
                 'primary' => Color::Amber, // Warna utama untuk panel admin

@@ -26,7 +26,7 @@ class EmployeePanelProvider extends PanelProvider
         return $panel
             ->id('employee')
             ->path('employee')
-            ->login()
+            ->login() //LOGIN EMPLOYEE
             ->authGuard('employee')
             ->brandName('Employee Panel')
             ->colors([
