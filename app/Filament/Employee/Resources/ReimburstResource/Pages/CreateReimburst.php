@@ -9,4 +9,8 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateReimburst extends CreateRecord
 {
     protected static string $resource = ReimburstResource::class;
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
