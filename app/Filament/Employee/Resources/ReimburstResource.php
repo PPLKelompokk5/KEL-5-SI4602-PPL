@@ -78,10 +78,6 @@ class ReimburstResource extends Resource
                     ->label('Reimbursement Name')
                     ->searchable(),
 
-                TextColumn::make('project.name') // pastikan relasi ada
-                    ->label('Project')
-                    ->searchable(),
-
                 TextColumn::make('nominal')
                     ->label('Amount')
                     ->money('IDR')
