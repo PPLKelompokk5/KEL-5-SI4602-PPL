@@ -33,4 +33,10 @@ class Employee extends Authenticatable
     {
         return $this->belongsTo(Position::class);
     }
+    
+    // Relationship with reimbursements
+    public function reimbursements()
+    {
+        return $this->hasMany(Reimburst::class, 'nama_pengaju', 'name');
+    }
 }
