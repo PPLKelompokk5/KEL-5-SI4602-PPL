@@ -7,15 +7,13 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use App\Models\Reimburst;
 use App\Models\Project;
-use App\Models\Employee;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Card;
 use Filament\Forms\Components\Select;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Employee\Resources\ReimburstResource\Pages;
 
 class ReimburstResource extends Resource
@@ -23,13 +21,9 @@ class ReimburstResource extends Resource
     protected static ?string $model = Reimburst::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-
     protected static ?string $navigationLabel = 'Reimbursements';
-
     protected static ?string $navigationGroup = 'Finance';
-
     protected static ?string $pluralModelLabel = 'Reimbursements';
-
 
     public static function form(Form $form): Form
     {
@@ -44,13 +38,13 @@ class ReimburstResource extends Resource
 
                         TextInput::make('nama_pengaju')
                             ->label('Requested By')
-                            ->default(fn() => auth()->guard('employee')->user()->name ?? '')
+                            ->default(fn () => auth()->guard('employee')->user()->name ?? '')
                             ->readOnly()
                             ->required(),
 
                         Select::make('project_id')
                             ->label('Project')
-                            ->relationship('project', 'name')
+                            ->relationship('project', 'id') // fix di sini
                             ->searchable()
                             ->preload()
                             ->required(),
@@ -83,13 +77,16 @@ class ReimburstResource extends Resource
                 TextColumn::make('nama_reimburse')
                     ->label('Reimbursement Name')
                     ->searchable(),
-                TextColumn::make('project.name')
+
+                TextColumn::make('project.name') // pastikan relasi ada
                     ->label('Project')
                     ->searchable(),
+
                 TextColumn::make('nominal')
                     ->label('Amount')
                     ->money('IDR')
                     ->sortable(),
+
                 TextColumn::make('status_approval')
                     ->label('Status')
                     ->badge()
@@ -99,6 +96,7 @@ class ReimburstResource extends Resource
                         'rejected' => 'danger',
                         default => 'gray',
                     }),
+
                 TextColumn::make('created_at')
                     ->label('Submitted At')
                     ->dateTime()
@@ -116,7 +114,9 @@ class ReimburstResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->visible(fn (Reimburst $record): bool => $record->status_approval === 'pending'),
+
                 Tables\Actions\ViewAction::make(),
+
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn (Reimburst $record): bool => $record->status_approval === 'pending'),
             ])
@@ -125,7 +125,9 @@ class ReimburstResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->modifyQueryUsing(fn (Builder $query) => $query->where('nama_pengaju', auth()->guard('employee')->user()->name ?? ''));
+            ->modifyQueryUsing(fn (Builder $query) =>
+                $query->where('nama_pengaju', auth()->guard('employee')->user()->name ?? '')
+            );
     }
 
     public static function getRelations(): array

@@ -18,7 +18,7 @@ class Reimburst extends Model
     /**
      * Get the project that owns the reimbursement.
      */
-    public function project(): BelongsTo
+    public function project()
     {
         return $this->belongsTo(Project::class, 'project_id', 'id');
     }
