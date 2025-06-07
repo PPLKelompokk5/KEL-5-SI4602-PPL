@@ -15,7 +15,7 @@ return new class extends Migration
         // Step 1: Add the new project_id column
         Schema::table('reimbursts', function (Blueprint $table) {  // Changed from 'reimbursements' to 'reimbursts'
             if (!Schema::hasColumn('reimbursts', 'project_id')) {
-                $table->unsignedBigInteger('project_id')->after('nama_pengaju')->nullable();
+                $table->string('project_id', 10)->after('nama_pengaju')->nullable();
                 $table->foreign('project_id')->references('id')->on('projects');
             }
         });
