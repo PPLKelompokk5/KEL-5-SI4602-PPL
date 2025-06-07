@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Reimburst extends Model
 {
     protected $fillable = [
+        'id_karyawan',
         'nama_reimburse',
         'nama_pengaju',
         'project_id', // Changed from nama_project to project_id
@@ -30,4 +31,9 @@ class Reimburst extends Model
     {
         return $this->belongsTo(Employee::class, 'nama_pengaju', 'name');
     }
+    public function karyawan()
+{
+    return $this->belongsTo(Karyawan::class, 'id_karyawan');
+}
+
 }

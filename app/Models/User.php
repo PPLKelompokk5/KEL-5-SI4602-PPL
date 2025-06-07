@@ -60,4 +60,9 @@ class User extends Authenticatable
     /* -----------------------------------------------------------------
      |  Accessors / Mutators tambahan (jika perlu)
      |----------------------------------------------------------------- */
+     public function karyawan()
+{
+    return $this->hasOne(Karyawan::class, 'user_id');
+}
+
 }

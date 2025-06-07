@@ -17,6 +17,8 @@ use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Employee\Resources\ReimburstResource\Pages;
+use Filament\Forms\Components\Hidden; // Don't forget to import this!
+
 
 class ReimburstResource extends Resource
 {
@@ -50,7 +52,11 @@ class ReimburstResource extends Resource
 
                         Select::make('project_id')
                             ->label('Project')
-                            ->relationship('project', 'name')
+                            ->relationship(
+                                name: 'project',
+                                titleAttribute: 'id',
+                                modifyQueryUsing: fn (Builder $query) => $query->where('status', 1)
+                            )
                             ->searchable()
                             ->preload()
                             ->required(),
@@ -71,6 +77,8 @@ class ReimburstResource extends Resource
                             ->default('pending')
                             ->disabled()
                             ->dehydrated(),
+                            Hidden::make('id_karyawan')
+                ->default(auth()->guard('employee')->user()->id ?? null)
                     ])
                     ->columns(2),
             ]);
@@ -103,6 +111,7 @@ class ReimburstResource extends Resource
                     ->label('Submitted At')
                     ->dateTime()
                     ->sortable(),
+
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status_approval')
@@ -113,6 +122,7 @@ class ReimburstResource extends Resource
                         'rejected' => 'Rejected',
                     ]),
             ])
+            // ->modifyQueryUsing(fn (Builder $query) => $query->where('nama_pengaju', auth()->guard('employee')->user()->name ?? ''))
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->visible(fn (Reimburst $record): bool => $record->status_approval === 'pending'),
@@ -124,8 +134,7 @@ class ReimburstResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])
-            ->modifyQueryUsing(fn (Builder $query) => $query->where('nama_pengaju', auth()->guard('employee')->user()->name ?? ''));
+            ]);
     }
 
     public static function getRelations(): array
@@ -151,4 +160,17 @@ class ReimburstResource extends Resource
     {
         return $record->status_approval === 'pending';
     }
+   public static function mutateFormDataBeforeCreate(array $data): array
+{
+    $data['id_karyawan'] = auth()->guard('employee')->user()->karyawan->id ?? null;
+    return $data;
+}
+
+public static function mutateFormDataBeforeUpdate(array $data): array
+{
+    $data['id_karyawan'] = auth()->guard('employee')->user()->karyawan->id ?? null;
+    return $data;
+}
+
+
 }
