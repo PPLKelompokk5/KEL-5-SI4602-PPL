@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,7 +14,7 @@ return new class extends Migration
         // Step 1: Add the new project_id column
         Schema::table('reimbursts', function (Blueprint $table) {  // Changed from 'reimbursements' to 'reimbursts'
             if (!Schema::hasColumn('reimbursts', 'project_id')) {
-                $table->unsignedBigInteger('project_id')->after('nama_pengaju')->nullable();
+                $table->string('project_id')->after('nama_pengaju')->nullable();
                 $table->foreign('project_id')->references('id')->on('projects');
             }
         });

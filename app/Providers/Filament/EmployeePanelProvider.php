@@ -18,6 +18,8 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Models\Employee;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 
 class EmployeePanelProvider extends PanelProvider
 {
@@ -27,7 +29,7 @@ class EmployeePanelProvider extends PanelProvider
             ->id('employee')
             ->path('employee')
             ->login()
-            ->authGuard('employee')
+            ->authGuard('web')
             ->brandName('Employee Panel')
             ->colors([
                 'primary' => Color::Amber,
@@ -55,6 +57,9 @@ class EmployeePanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+            ])
+            ->plugins([
+                FilamentShieldPlugin::make(),
             ]);
     }
 }
