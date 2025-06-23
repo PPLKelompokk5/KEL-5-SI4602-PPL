@@ -46,7 +46,7 @@ class ReimburstResource extends Resource
 
                         TextInput::make('nama_pengaju')
                             ->label('Requested By')
-                            ->default(fn() => auth()->guard('employee')->user()->name ?? '')
+                            ->default(fn() => auth()->guard('web')->user()->name ?? '')
                             ->readOnly()
                             ->required(),
 
@@ -77,8 +77,8 @@ class ReimburstResource extends Resource
                             ->default('pending')
                             ->disabled()
                             ->dehydrated(),
-                            Hidden::make('id_karyawan')
-                ->default(auth()->guard('employee')->user()->id ?? null)
+                        Hidden::make('id_karyawan')
+                            ->default(auth()->guard('web')->user()->id ?? null)
                     ])
                     ->columns(2),
             ]);
