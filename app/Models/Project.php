@@ -44,6 +44,12 @@ class Project extends Model
         return $this->belongsTo(Client::class, 'client_id');
     }
 
+    //relasi ke task
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'project_id', 'id');
+    }
+
     // Generate otomatis ID dan hitung ROI IDR
     protected static function booted(): void
     {

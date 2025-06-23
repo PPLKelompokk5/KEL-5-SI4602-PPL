@@ -6,6 +6,9 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;   // hapus jika tak dipakai
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 
 /**
  * @property int         $id
@@ -20,10 +23,13 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+    use HasRoles;
 
     /* -----------------------------------------------------------------
      |  Mass assignment
      |----------------------------------------------------------------- */
+    protected $guard_name = 'web';
+
     protected $fillable = [
         'name',
         'email',
@@ -44,7 +50,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         // Sejak Laravel 10, tipe 'hashed' akan otomatis Hash::make()
-        'password'          => 'hashed',
+        'password' => 'hashed',
     ];
 
     /* -----------------------------------------------------------------
@@ -60,4 +66,22 @@ class User extends Authenticatable
     /* -----------------------------------------------------------------
      |  Accessors / Mutators tambahan (jika perlu)
      |----------------------------------------------------------------- */
+     public function karyawan()
+{
+    return $this->hasOne(Karyawan::class, 'user_id');
+}
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+
+        if ($panel->getId() === 'admin') {
+            return $this->hasRole('super_admin');
+        }
+
+        if ($panel->getId() == 'employee') {
+            return true;
+        }
+
+        return false;
+    }
 }
