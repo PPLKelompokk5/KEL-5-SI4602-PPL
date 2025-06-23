@@ -1,4 +1,12 @@
 <x-filament::page>
+    <div class="flex justify-end mb-6">
+        <a href="/about" class="px-5 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition font-semibold flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+            </svg>
+            About
+        </a>
+    </div>
     <div class="flex flex-col md:flex-row gap-6 mb-8">
         <div class="w-full md:w-2/3">
             <x-filament::section>

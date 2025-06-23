@@ -8,3 +8,5 @@ Route::get('/', function () {
 
 Route::redirect('/admin', '/admin/login')->name('admin.login');
 Route::redirect('/employee', '/employee/login')->name('employee.login');
+// About page route
+Route::view('/about', 'about')->name('about');
