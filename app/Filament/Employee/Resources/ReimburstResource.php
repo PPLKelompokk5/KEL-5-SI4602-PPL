@@ -46,7 +46,11 @@ class ReimburstResource extends Resource
 
                         TextInput::make('nama_pengaju')
                             ->label('Requested By')
+<<<<<<< HEAD
                             ->default(fn() => auth()->guard('web')->user()->name ?? '')
+=======
+                            ->default(fn() => auth()->guard('employee')->user()->name ?? '')
+>>>>>>> b50306a293555765397df7910ee80973cbc6a0c1
                             ->readOnly()
                             ->required(),
 
